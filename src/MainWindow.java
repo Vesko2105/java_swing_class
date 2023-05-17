@@ -23,7 +23,7 @@ public class MainWindow implements ActionListener {
     private void init() {
         //Frame settings
         window = new JFrame();
-        window.setSize(600, 600);
+        window.setSize(600, 700);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setLayout(new BoxLayout(window.getContentPane(), BoxLayout.Y_AXIS));
         window.setBackground(mainBackgroundColor);
@@ -53,20 +53,38 @@ public class MainWindow implements ActionListener {
         searchControlsPanel.add(searchButton);
 
         //Search results area
-        JPanel searchResultPanel = new JPanel();
+        JPanel searchResultPanel = new JPanel(new BorderLayout());
         searchResultPanel.setBackground(mainBackgroundColor);
-        searchResultPanel.setBorder(BorderFactory.createLineBorder(mainDarkColor, 1));
+        searchResultPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(0, 50, 0, 50),
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(mainDarkColor),
+                        "Results",
+                        TitledBorder.CENTER,
+                        TitledBorder.TOP
+                )
+        ));
         window.add(searchResultPanel);
 
         tableDataModel = new TableDataModel();
         Movie.getTestData().forEach(tableDataModel::addMovie);
+
         JTable searchResultTable = new JTable(tableDataModel);
         searchResultTable.setFont(GLOBAL_FONT);
-        searchResultTable.getColumnModel().getColumn(0).setPreferredWidth(20);
+        searchResultTable.setBorder(null);
 
         JScrollPane scrollablePane = new JScrollPane(searchResultTable);
-        scrollablePane.setPreferredSize(new Dimension(500, 200));
-        searchResultPanel.add(scrollablePane);
+        scrollablePane.setBackground(mainBackgroundColor);
+        scrollablePane.setCorner(JScrollPane.UPPER_RIGHT_CORNER, new JComponent() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                g.setColor(searchResultTable.getTableHeader().getBackground());
+                g.fillRect(0, 0, getWidth(), getHeight());
+            }
+        });
+        scrollablePane.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        scrollablePane.setPreferredSize(new Dimension(400, 150));
+        searchResultPanel.add(scrollablePane, BorderLayout.CENTER);
 
         //Data control area
         JPanel dataControlPanel = new JPanel(new GridBagLayout());
@@ -96,17 +114,17 @@ public class MainWindow implements ActionListener {
 
         JLabel label2 = new JLabel(tableDataModel.getColumnName(1));
         label2.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
-        constraints.gridy = 1;
+        constraints.gridy++;
         dataControlPanel.add(label2, constraints);
 
         JLabel label3 = new JLabel(tableDataModel.getColumnName(2));
         label3.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
-        constraints.gridy = 2;
+        constraints.gridy++;
         dataControlPanel.add(label3, constraints);
 
         JLabel label4 = new JLabel(tableDataModel.getColumnName(3));
         label4.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
-        constraints.gridy = 3;
+        constraints.gridy++;
         dataControlPanel.add(label4, constraints);
 
         textFields = new JTextField[tableDataModel.getColumnCount()];

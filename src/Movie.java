@@ -71,12 +71,26 @@ public class Movie {
                 new Movie("Movie 4", 2004, "Someone 4"),
                 new Movie("Movie 5", 2005, "Someone 5"),
                 new Movie("Movie 6", 2006, "Someone 6"),
-                new Movie("Movie 7", 2007, "Someone 7")
+                new Movie("Movie 7", 2007, "Someone 7"),
+                new Movie("Movie 6", 2006, "Someone 8"),
+                new Movie("Movie 6", 2006, "Someone 9"),
+                new Movie("Movie 6", 2006, "Someone 10"),
+                new Movie("Movie 6", 2006, "Someone 11"),
+                new Movie("Movie 6", 2006, "Someone 12"),
+                new Movie("Movie 6", 2006, "Someone 13"),
+                new Movie("Movie 6", 2006, "Someone 14"),
+                new Movie("Movie 6", 2006, "Someone 15"),
+                new Movie("Movie 6", 2006, "Someone 16"),
+                new Movie("Movie 6", 2006, "Someone 17"),
+                new Movie("Movie 6", 2006, "Someone 18"),
+                new Movie("Movie 6", 2006, "Someone 19"),
+                new Movie("Movie 6", 2006, "Someone 20"),
+                new Movie("Movie 6", 2006, "Someone 21")
         );
     }
 
     public String[] toTableData() {
-        return new String[] {
+        return new String[]{
                 String.valueOf(id),
                 title,
                 String.valueOf(yearReleased),
