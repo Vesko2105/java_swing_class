@@ -6,8 +6,13 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.StringJoiner;
 
-public class MainWindow implements ActionListener, ListSelectionListener {
+// TODO: 5/18/2023 Trim input from text fields
+
+public class MainWindow implements ActionListener, ListSelectionListener, KeyListener {
     private JFrame window;
     private static final Font GLOBAL_FONT = new Font("Consolas", Font.PLAIN, 14);
     private static Color mainBackgroundColor = new Color(38, 142, 213, 255);
@@ -16,7 +21,9 @@ public class MainWindow implements ActionListener, ListSelectionListener {
     private JTable searchResultTable;
 
     private JTextField[] movieDataFields;
+
     private JTextField searchBar;
+    private JButton searchButton;
 
     public MainWindow() {
         init();
@@ -48,9 +55,10 @@ public class MainWindow implements ActionListener, ListSelectionListener {
 
         searchBar = new JTextField(30);
         searchBar.setFont(GLOBAL_FONT);
+        searchBar.addKeyListener(this);
         searchControlsPanel.add(searchBar);
 
-        JButton searchButton = new JButton("SEARCH");
+        searchButton = new JButton("SEARCH");
         searchButton.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
         searchButton.setActionCommand("search");
         searchButton.addActionListener(this);
@@ -77,6 +85,7 @@ public class MainWindow implements ActionListener, ListSelectionListener {
         searchResultTable.setRowSorter(tableRowSorter);
         searchResultTable.setFont(GLOBAL_FONT);
         searchResultTable.setBorder(null);
+        searchResultTable.addKeyListener(this);
 
         Movie.getTestData().forEach(tableDataModel::addMovie);
 
@@ -158,24 +167,40 @@ public class MainWindow implements ActionListener, ListSelectionListener {
         constraints.fill = GridBagConstraints.NONE;
 
         Dimension preferredButtonDimension = new Dimension(100, 30);
+        Insets buttonMargins = new Insets(0, 0, 0, 0);
 
-        JButton buttonSave = new JButton("SAVE");
+        ImageIcon saveIcon = new ImageIcon("icons/saveIcon.png");
+        Image saveIconImage = saveIcon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
+        saveIcon = new ImageIcon(saveIconImage);
+
+        JButton buttonSave = new JButton("SAVE", saveIcon);
+        buttonSave.setMargin(buttonMargins);
         buttonSave.setPreferredSize(preferredButtonDimension);
         buttonSave.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
         buttonSave.setActionCommand("save");
         buttonSave.addActionListener(this);
         dataControlPanel.add(buttonSave, constraints);
 
-        JButton buttonAdd = new JButton("ADD");
-        buttonAdd.setActionCommand("add");
-        buttonAdd.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
-        buttonAdd.setPreferredSize(preferredButtonDimension);
-        buttonAdd.addActionListener(this);
-        constraints.gridx = 1;
-        dataControlPanel.add(buttonAdd, constraints);
+        ImageIcon createIcon = new ImageIcon("icons/createIcon.png");
+        Image createIconImage = createIcon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
+        createIcon = new ImageIcon(createIconImage);
 
-        JButton buttonDelete = new JButton("DELETE");
+        JButton buttonCreate = new JButton("CREATE", createIcon);
+        buttonCreate.setActionCommand("create");
+        buttonCreate.setMargin(buttonMargins);
+        buttonCreate.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
+        buttonCreate.setPreferredSize(preferredButtonDimension);
+        buttonCreate.addActionListener(this);
+        constraints.gridx = 1;
+        dataControlPanel.add(buttonCreate, constraints);
+
+        ImageIcon deleteIcon = new ImageIcon("icons/deleteIcon.png");
+        Image deleteIconImage = deleteIcon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
+        deleteIcon = new ImageIcon(deleteIconImage);
+
+        JButton buttonDelete = new JButton("DELETE", deleteIcon);
         buttonDelete.setActionCommand("delete");
+        buttonDelete.setMargin(buttonMargins);
         buttonDelete.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
         buttonDelete.setPreferredSize(preferredButtonDimension);
         buttonDelete.addActionListener(this);
@@ -209,25 +234,32 @@ public class MainWindow implements ActionListener, ListSelectionListener {
         TableDataModel tableDataModel = (TableDataModel) searchResultTable.getModel();
 
         switch (e.getActionCommand()) {
-            case "add":
-                boolean addedSuccessfully = tableDataModel.addMovie(new Movie(
-                        movieDataFields[1].getText(),
-                        Integer.parseInt(movieDataFields[2].getText()),
-                        movieDataFields[3].getText()
+            case "create":
+                if(!checkDataValidity()) {
+                    return;
+                }
+                boolean createdSuccessfully = tableDataModel.addMovie(new Movie(
+                        movieDataFields[1].getText().trim(),
+                        Integer.parseInt(movieDataFields[2].getText().trim()),
+                        movieDataFields[3].getText().trim()
                 ));
-                if (!addedSuccessfully) {
-                    JOptionPane.showMessageDialog(null, "Movie record already exists!");
+                if (!createdSuccessfully) {
+                    JOptionPane.showMessageDialog(window, "Movie record already exists!", "Conflict", JOptionPane.ERROR_MESSAGE);
                 }
                 break;
             case "delete":
-                tableDataModel.deleteMovie(Long.parseLong(movieDataFields[0].getText()));
+                tableDataModel.deleteMovie(Long.parseLong(movieDataFields[0].getText().trim()));
                 break;
             case "save":
+                if(!checkDataValidity()) {
+                    return;
+                }
+                checkDataValidity();
                 tableDataModel.updateMovie(new Movie(
-                        Long.parseLong(movieDataFields[0].getText()),
-                        movieDataFields[1].getText(),
-                        Integer.parseInt(movieDataFields[2].getText()),
-                        movieDataFields[3].getText()
+                        Long.parseLong(movieDataFields[0].getText().trim()),
+                        movieDataFields[1].getText().trim(),
+                        Integer.parseInt(movieDataFields[2].getText().trim()),
+                        movieDataFields[3].getText().trim()
                 ));
                 break;
             case "search":
@@ -236,6 +268,45 @@ public class MainWindow implements ActionListener, ListSelectionListener {
                 RowFilter<TableDataModel, Object> rowFilter = RowFilter.regexFilter(searchTerm);
                 tableSorter.setRowFilter(rowFilter);
                 tableDataModel.fireTableDataChanged();
+                searchResultTable.getSelectionModel().clearSelection();
+        }
+    }
+
+    private boolean checkDataValidity() {
+        StringJoiner emptyFields = new StringJoiner(", ");
+        short emptyFieldsCount = 0;
+        for (int i = 1; i < movieDataFields.length; i++) {
+            if(movieDataFields[i].getText().isBlank()) {
+                emptyFields.add(Movie.TABLE_COLUMN_NAMES[i]);
+                emptyFieldsCount++;
+            }
+        }
+
+        if(emptyFieldsCount > 0) {
+            boolean multipleEmptyFields = emptyFieldsCount > 1;
+            String message = String.format(
+                    "The following data field%s %s empty: %s",
+                    multipleEmptyFields ? "s" : "",
+                    multipleEmptyFields ? "are" : "is",
+                    emptyFields
+            );
+            JOptionPane.showMessageDialog(window , message, "Invalid Input", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {}
+
+    @Override
+    public void keyPressed(KeyEvent e) {}
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        if(e.getKeyCode() == KeyEvent.VK_ENTER && e.getComponent() == searchBar) {
+            searchButton.doClick();
         }
     }
 }
