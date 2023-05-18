@@ -2,26 +2,28 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class MainWindow implements ActionListener {
+public class MainWindow implements ActionListener, ListSelectionListener {
     private JFrame window;
     private static final Font GLOBAL_FONT = new Font("Consolas", Font.PLAIN, 14);
     private static Color mainBackgroundColor = new Color(38, 142, 213, 255);
     private static Color mainDarkColor = new Color(15, 58, 87);
 
-    private TableDataModel tableDataModel;
+    private JTable searchResultTable;
 
-    private JTextField[] textFields;
+    private JTextField[] movieDataFields;
+    private JTextField searchBar;
 
     public MainWindow() {
         init();
     }
 
     private void init() {
-        //Frame settings
+        //-------- Frame settings -----------
         window = new JFrame();
         window.setSize(600, 700);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -29,7 +31,7 @@ public class MainWindow implements ActionListener {
         window.setBackground(mainBackgroundColor);
         window.setLocationRelativeTo(null);
 
-        //Title area
+        //-------- Title area --------
         JPanel titlePanel = new JPanel();
         titlePanel.setBackground(new Color(13, 50, 79));
         window.add(titlePanel);
@@ -39,20 +41,22 @@ public class MainWindow implements ActionListener {
         title.setForeground(new Color(218, 221, 222, 255));
         titlePanel.add(title);
 
-        //Search controls area
+        //-------- Search controls area --------
         JPanel searchControlsPanel = new JPanel(new FlowLayout());
         searchControlsPanel.setBackground(mainBackgroundColor);
         window.add(searchControlsPanel);
 
-        JTextField searchBar = new JTextField(30);
+        searchBar = new JTextField(30);
         searchBar.setFont(GLOBAL_FONT);
         searchControlsPanel.add(searchBar);
 
         JButton searchButton = new JButton("SEARCH");
         searchButton.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
+        searchButton.setActionCommand("search");
+        searchButton.addActionListener(this);
         searchControlsPanel.add(searchButton);
 
-        //Search results area
+        //-------- Search results area --------
         JPanel searchResultPanel = new JPanel(new BorderLayout());
         searchResultPanel.setBackground(mainBackgroundColor);
         searchResultPanel.setBorder(BorderFactory.createCompoundBorder(
@@ -66,27 +70,27 @@ public class MainWindow implements ActionListener {
         ));
         window.add(searchResultPanel);
 
-        tableDataModel = new TableDataModel();
-        Movie.getTestData().forEach(tableDataModel::addMovie);
+        TableDataModel tableDataModel = new TableDataModel();
+        TableRowSorter<TableDataModel> tableRowSorter = new TableRowSorter<>(tableDataModel);
 
-        JTable searchResultTable = new JTable(tableDataModel);
+        searchResultTable = new JTable(tableDataModel);
+        searchResultTable.setRowSorter(tableRowSorter);
         searchResultTable.setFont(GLOBAL_FONT);
         searchResultTable.setBorder(null);
 
+        Movie.getTestData().forEach(tableDataModel::addMovie);
+
         JScrollPane scrollablePane = new JScrollPane(searchResultTable);
         scrollablePane.setBackground(mainBackgroundColor);
-        scrollablePane.setCorner(JScrollPane.UPPER_RIGHT_CORNER, new JComponent() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                g.setColor(searchResultTable.getTableHeader().getBackground());
-                g.fillRect(0, 0, getWidth(), getHeight());
-            }
-        });
+        scrollablePane.setCorner(
+                JScrollPane.UPPER_RIGHT_CORNER,
+                new TableCorner(searchResultTable.getTableHeader().getBackground())
+        );
         scrollablePane.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         scrollablePane.setPreferredSize(new Dimension(400, 150));
         searchResultPanel.add(scrollablePane, BorderLayout.CENTER);
 
-        //Data control area
+        //-------- Data control area --------
         JPanel dataControlPanel = new JPanel(new GridBagLayout());
         dataControlPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createEmptyBorder(20, 100, 20, 100),
@@ -102,37 +106,9 @@ public class MainWindow implements ActionListener {
 
         GridBagConstraints constraints = new GridBagConstraints();
 
-        JLabel label1 = new JLabel(tableDataModel.getColumnName(0));
-        label1.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
-        constraints.gridx = 0;
-        constraints.gridy = 0;
-        constraints.gridwidth = 1;
-        constraints.weightx = 0;
-        constraints.insets = new Insets(10, 30, 10, 0);
-        constraints.anchor = GridBagConstraints.LINE_START;
-        dataControlPanel.add(label1, constraints);
+        //********** Data control text fields **********
+        movieDataFields = new JTextField[tableDataModel.getColumnCount()];
 
-        JLabel label2 = new JLabel(tableDataModel.getColumnName(1));
-        label2.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
-        constraints.gridy++;
-        dataControlPanel.add(label2, constraints);
-
-        JLabel label3 = new JLabel(tableDataModel.getColumnName(2));
-        label3.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
-        constraints.gridy++;
-        dataControlPanel.add(label3, constraints);
-
-        JLabel label4 = new JLabel(tableDataModel.getColumnName(3));
-        label4.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
-        constraints.gridy++;
-        dataControlPanel.add(label4, constraints);
-
-        textFields = new JTextField[tableDataModel.getColumnCount()];
-
-        textFields[0] = new JTextField(10);
-        textFields[0].setBorder(BorderFactory.createLineBorder(mainDarkColor));
-        textFields[0].setFont(GLOBAL_FONT);
-        textFields[0].setEditable(false);
         constraints.gridx = 1;
         constraints.gridy = 0;
         constraints.gridwidth = GridBagConstraints.REMAINDER;
@@ -142,56 +118,58 @@ public class MainWindow implements ActionListener {
         constraints.anchor = GridBagConstraints.CENTER;
         constraints.fill = GridBagConstraints.HORIZONTAL;
 
-        JScrollPane scrollPane1 = new JScrollPane(textFields[0]);
-        scrollPane1.setBorder(null);
-        dataControlPanel.add(scrollPane1, constraints);
+        for (int i = 0; i < movieDataFields.length; i++) {
 
-        textFields[1] = new JTextField(10);
-        textFields[1].setFont(GLOBAL_FONT);
-        textFields[1].setBorder(BorderFactory.createLineBorder(mainDarkColor));
-        constraints.gridy = 1;
+            movieDataFields[i] = new JTextField(10);
+            movieDataFields[i].setBorder(BorderFactory.createLineBorder(mainDarkColor));
+            movieDataFields[i].setFont(GLOBAL_FONT);
 
-        JScrollPane scrollPane2 = new JScrollPane(textFields[1]);
-        scrollPane2.setBorder(null);
-        dataControlPanel.add(scrollPane2, constraints);
+            JScrollPane scrollPane = new JScrollPane(movieDataFields[i]);
+            scrollPane.setBorder(null);
+            dataControlPanel.add(scrollPane, constraints);
+            constraints.gridy++;
+        }
 
-        textFields[2] = new JTextField(10);
-        textFields[2].setFont(GLOBAL_FONT);
-        textFields[2].setBorder(BorderFactory.createLineBorder(mainDarkColor));
-        constraints.gridy = 2;
+        movieDataFields[0].setEditable(false);
 
-        JScrollPane scrollPane3 = new JScrollPane(textFields[2]);
-        scrollPane3.setBorder(null);
-        dataControlPanel.add(scrollPane3, constraints);
+        //********** Data control labels **********
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.gridwidth = 1;
+        constraints.weightx = 0;
+        constraints.insets = new Insets(10, 30, 10, 0);
+        constraints.anchor = GridBagConstraints.LINE_START;
 
-        textFields[3] = new JTextField(10);
-        textFields[3].setFont(GLOBAL_FONT);
-        textFields[3].setBorder(BorderFactory.createLineBorder(mainDarkColor));
-        constraints.gridy = 3;
+        for (int i = 0; i < movieDataFields.length; i++) {
+            JLabel label = new JLabel(tableDataModel.getColumnName(i));
+            label.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
+            dataControlPanel.add(label, constraints);
+            constraints.gridy++;
+        }
 
-        JScrollPane scrollPane4 = new JScrollPane(textFields[3]);
-        scrollPane4.setBorder(null);
-        dataControlPanel.add(scrollPane4, constraints);
-
-        JButton buttonSave = new JButton("SAVE");
-        buttonSave.setPreferredSize(new Dimension(60, 30));
-        buttonSave.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
-        buttonSave.setActionCommand("save");
-        buttonSave.addActionListener(this);
+        //********** Data control buttons **********
         constraints.gridx = 0;
         constraints.gridy = 4;
         constraints.gridwidth = 1;
         constraints.weightx = 1;
         constraints.ipady = 0;
-        constraints.insets = new Insets(10, 15, 10, 0);
+        constraints.insets = new Insets(0, 0, 0, 0);
         constraints.anchor = GridBagConstraints.CENTER;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.fill = GridBagConstraints.NONE;
+
+        Dimension preferredButtonDimension = new Dimension(100, 30);
+
+        JButton buttonSave = new JButton("SAVE");
+        buttonSave.setPreferredSize(preferredButtonDimension);
+        buttonSave.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
+        buttonSave.setActionCommand("save");
+        buttonSave.addActionListener(this);
         dataControlPanel.add(buttonSave, constraints);
 
         JButton buttonAdd = new JButton("ADD");
         buttonAdd.setActionCommand("add");
         buttonAdd.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
-        buttonAdd.setPreferredSize(new Dimension(60, 30));
+        buttonAdd.setPreferredSize(preferredButtonDimension);
         buttonAdd.addActionListener(this);
         constraints.gridx = 1;
         dataControlPanel.add(buttonAdd, constraints);
@@ -199,53 +177,65 @@ public class MainWindow implements ActionListener {
         JButton buttonDelete = new JButton("DELETE");
         buttonDelete.setActionCommand("delete");
         buttonDelete.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
-        buttonDelete.setPreferredSize(new Dimension(60, 30));
+        buttonDelete.setPreferredSize(preferredButtonDimension);
         buttonDelete.addActionListener(this);
         constraints.gridx = 2;
-        constraints.insets = new Insets(0, 15, 0, 15);
         dataControlPanel.add(buttonDelete, constraints);
 
         ListSelectionModel tableSelectionModel = searchResultTable.getSelectionModel();
-        tableSelectionModel.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                int selectedRow = tableSelectionModel.getMinSelectionIndex();
-                if (selectedRow < 0) {
-                    return;
-                }
-                for (int i = 0; i < textFields.length; i++) {
-                    textFields[i].setText((String) tableDataModel.getValueAt(selectedRow, i));
-                }
-            }
-        });
+        tableSelectionModel.addListSelectionListener(this);
 
         window.setVisible(true);
     }
 
     @Override
+    public void valueChanged(ListSelectionEvent e) {
+        int selectedTableRow = searchResultTable.getSelectionModel().getMinSelectionIndex();
+        if (selectedTableRow < 0) {
+            for (JTextField movieDataField : movieDataFields) {
+                movieDataField.setText("");
+            }
+            return;
+        }
+
+        int movieIndex = searchResultTable.getRowSorter().convertRowIndexToModel(selectedTableRow);
+        for (int i = 0; i < movieDataFields.length; i++) {
+            movieDataFields[i].setText((String) searchResultTable.getModel().getValueAt(movieIndex, i));
+        }
+    }
+
+    @Override
     public void actionPerformed(ActionEvent e) {
+        TableDataModel tableDataModel = (TableDataModel) searchResultTable.getModel();
+
         switch (e.getActionCommand()) {
             case "add":
                 boolean addedSuccessfully = tableDataModel.addMovie(new Movie(
-                        textFields[1].getText(),
-                        Integer.parseInt(textFields[2].getText()),
-                        textFields[3].getText()
+                        movieDataFields[1].getText(),
+                        Integer.parseInt(movieDataFields[2].getText()),
+                        movieDataFields[3].getText()
                 ));
                 if (!addedSuccessfully) {
                     JOptionPane.showMessageDialog(null, "Movie record already exists!");
                 }
                 break;
             case "delete":
-                tableDataModel.deleteMovie(Long.parseLong(textFields[0].getText()));
+                tableDataModel.deleteMovie(Long.parseLong(movieDataFields[0].getText()));
                 break;
             case "save":
                 tableDataModel.updateMovie(new Movie(
-                        Long.parseLong(textFields[0].getText()),
-                        textFields[1].getText(),
-                        Integer.parseInt(textFields[2].getText()),
-                        textFields[3].getText()
+                        Long.parseLong(movieDataFields[0].getText()),
+                        movieDataFields[1].getText(),
+                        Integer.parseInt(movieDataFields[2].getText()),
+                        movieDataFields[3].getText()
                 ));
                 break;
+            case "search":
+                String searchTerm = searchBar.getText().trim();
+                TableRowSorter<TableDataModel> tableSorter = (TableRowSorter<TableDataModel>) searchResultTable.getRowSorter();
+                RowFilter<TableDataModel, Object> rowFilter = RowFilter.regexFilter(searchTerm);
+                tableSorter.setRowFilter(rowFilter);
+                tableDataModel.fireTableDataChanged();
         }
     }
 }
