@@ -293,7 +293,11 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
                 tableColumnAdjuster.adjustColumns();
                 break;
             case "delete":
-                tableDataModel.deleteMovie(Long.parseLong(movieDataFields.get(0).getText().trim()));
+                String id = movieDataFields.get(0).getText().trim();
+                if (id.isBlank()) {
+                    return;
+                }
+                tableDataModel.deleteMovie(Long.parseLong(id));
                 tableColumnAdjuster.adjustColumns();
                 break;
             case "save":
@@ -324,6 +328,12 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
     private boolean checkDataValidity() {
         StringJoiner emptyFields = new StringJoiner(", ");
         short emptyFieldsCount = 0;
+
+        String id = movieDataFields.get(0).getText().trim();
+        if(id.isBlank()) {
+            return false;
+        }
+
         for (int i = 1; i < movieDataFields.size(); i++) {
             if(movieDataFields.get(i).getText().isBlank()) {
                 emptyFields.add(Movie.TABLE_COLUMN_NAMES[i]);
