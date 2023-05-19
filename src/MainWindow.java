@@ -3,11 +3,14 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableRowSorter;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringJoiner;
 
 // TODO: 5/18/2023 Trim input from text fields
@@ -19,8 +22,10 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
     private static Color mainDarkColor = new Color(15, 58, 87);
 
     private JTable searchResultTable;
+    TableColumnAdjuster tableColumnAdjuster;
 
-    private JTextField[] movieDataFields;
+
+    private List<JTextComponent> movieDataFields;
 
     private JTextField searchBar;
     private JButton searchButton;
@@ -32,7 +37,7 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
     private void init() {
         //-------- Frame settings -----------
         window = new JFrame();
-        window.setSize(600, 700);
+        window.setSize(800, 700);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setLayout(new BoxLayout(window.getContentPane(), BoxLayout.Y_AXIS));
         window.setBackground(mainBackgroundColor);
@@ -83,11 +88,15 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
 
         searchResultTable = new JTable(tableDataModel);
         searchResultTable.setRowSorter(tableRowSorter);
+        searchResultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         searchResultTable.setFont(GLOBAL_FONT);
         searchResultTable.setBorder(null);
         searchResultTable.addKeyListener(this);
 
         Movie.getTestData().forEach(tableDataModel::addMovie);
+
+        tableColumnAdjuster = new TableColumnAdjuster(searchResultTable);
+        tableColumnAdjuster.adjustColumns();
 
         JScrollPane scrollablePane = new JScrollPane(searchResultTable);
         scrollablePane.setBackground(mainBackgroundColor);
@@ -96,7 +105,6 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
                 new TableCorner(searchResultTable.getTableHeader().getBackground())
         );
         scrollablePane.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        scrollablePane.setPreferredSize(new Dimension(400, 150));
         searchResultPanel.add(scrollablePane, BorderLayout.CENTER);
 
         //-------- Data control area --------
@@ -115,58 +123,93 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
 
         GridBagConstraints constraints = new GridBagConstraints();
 
-        //********** Data control text fields **********
-        movieDataFields = new JTextField[tableDataModel.getColumnCount()];
-
-        constraints.gridx = 1;
-        constraints.gridy = 0;
-        constraints.gridwidth = GridBagConstraints.REMAINDER;
-        constraints.weightx = 1;
-        constraints.ipady = 5;
-        constraints.insets = new Insets(10, 30, 10, 30);
-        constraints.anchor = GridBagConstraints.CENTER;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-
-        for (int i = 0; i < movieDataFields.length; i++) {
-
-            movieDataFields[i] = new JTextField(10);
-            movieDataFields[i].setBorder(BorderFactory.createLineBorder(mainDarkColor));
-            movieDataFields[i].setFont(GLOBAL_FONT);
-
-            JScrollPane scrollPane = new JScrollPane(movieDataFields[i]);
-            scrollPane.setBorder(null);
-            dataControlPanel.add(scrollPane, constraints);
-            constraints.gridy++;
-        }
-
-        movieDataFields[0].setEditable(false);
-
         //********** Data control labels **********
         constraints.gridx = 0;
         constraints.gridy = 0;
         constraints.gridwidth = 1;
-        constraints.weightx = 0;
-        constraints.insets = new Insets(10, 30, 10, 0);
+        constraints.gridheight = 1;
+        constraints.weightx = 0.1;
+        constraints.insets.set(10, 30, 10, 0);
+        constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.LINE_START;
 
-        for (int i = 0; i < movieDataFields.length; i++) {
+        for (int i = 0; i < Movie.TABLE_COLUMN_NAMES.length - 1; i++) {
             JLabel label = new JLabel(tableDataModel.getColumnName(i));
             label.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
             dataControlPanel.add(label, constraints);
             constraints.gridy++;
         }
 
+        constraints.gridx = 3;
+        constraints.gridy = 0;
+        constraints.gridwidth = 3;
+        constraints.weightx = 0.5;
+        constraints.insets.right = 30;
+        constraints.anchor = GridBagConstraints.CENTER;
+
+        JLabel label = new JLabel(tableDataModel.getColumnName(Movie.TABLE_COLUMN_NAMES.length - 1));
+        label.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
+        dataControlPanel.add(label, constraints);
+
+        //********** Data control text fields **********
+        movieDataFields = new ArrayList<>();
+
+        constraints.gridx = 1;
+        constraints.gridy = 0;
+        constraints.gridwidth = 2;
+        constraints.weightx = 0.4;
+        constraints.ipady = 5;
+        constraints.insets.set(10, 0, 10, 0);
+        constraints.anchor = GridBagConstraints.CENTER;
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+
+        for (int i = 0; i < Movie.TABLE_COLUMN_NAMES.length - 1; i++) {
+
+            JTextField currentTextField = new JTextField();
+            movieDataFields.add(i, currentTextField);
+            currentTextField.setBorder(BorderFactory.createLineBorder(mainDarkColor));
+            currentTextField.setFont(GLOBAL_FONT);
+
+            dataControlPanel.add(currentTextField, constraints);
+            constraints.gridy++;
+        }
+
+        constraints.gridx = 3;
+        constraints.gridy = 1;
+        constraints.gridwidth = 3;
+        constraints.gridheight = 3;
+        constraints.weightx = 0.5;
+        constraints.insets.set(10, 30, 10, 30);
+        constraints.fill = GridBagConstraints.BOTH;
+
+        JTextArea textArea = new JTextArea();
+        textArea.setBorder(BorderFactory.createLineBorder(mainDarkColor));
+        textArea.setFont(GLOBAL_FONT);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        movieDataFields.add(textArea);
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        dataControlPanel.add(scrollPane, constraints);
+
+        movieDataFields.get(0).setEditable(false);
+
         //********** Data control buttons **********
         constraints.gridx = 0;
         constraints.gridy = 4;
-        constraints.gridwidth = 1;
+        constraints.gridwidth = 6;
         constraints.weightx = 1;
         constraints.ipady = 0;
-        constraints.insets = new Insets(0, 0, 0, 0);
-        constraints.anchor = GridBagConstraints.CENTER;
-        constraints.fill = GridBagConstraints.NONE;
+        constraints.insets.set(0, 0, 0, 0);
+        constraints.fill = GridBagConstraints.HORIZONTAL;
 
-        Dimension preferredButtonDimension = new Dimension(100, 30);
+        JPanel buttonsPanel = new JPanel();
+        buttonsPanel.setBackground(mainBackgroundColor);
+        ((FlowLayout)buttonsPanel.getLayout()).setHgap(30);
+        dataControlPanel.add(buttonsPanel, constraints);
+
+        Dimension preferredButtonSize = new Dimension(100, 30);
         Insets buttonMargins = new Insets(0, 0, 0, 0);
 
         ImageIcon saveIcon = new ImageIcon("icons/saveIcon.png");
@@ -175,11 +218,11 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
 
         JButton buttonSave = new JButton("SAVE", saveIcon);
         buttonSave.setMargin(buttonMargins);
-        buttonSave.setPreferredSize(preferredButtonDimension);
+        buttonSave.setPreferredSize(preferredButtonSize);
         buttonSave.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
         buttonSave.setActionCommand("save");
         buttonSave.addActionListener(this);
-        dataControlPanel.add(buttonSave, constraints);
+        buttonsPanel.add(buttonSave);
 
         ImageIcon createIcon = new ImageIcon("icons/createIcon.png");
         Image createIconImage = createIcon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
@@ -189,10 +232,10 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
         buttonCreate.setActionCommand("create");
         buttonCreate.setMargin(buttonMargins);
         buttonCreate.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
-        buttonCreate.setPreferredSize(preferredButtonDimension);
+        buttonCreate.setPreferredSize(preferredButtonSize);
         buttonCreate.addActionListener(this);
         constraints.gridx = 1;
-        dataControlPanel.add(buttonCreate, constraints);
+        buttonsPanel.add(buttonCreate);
 
         ImageIcon deleteIcon = new ImageIcon("icons/deleteIcon.png");
         Image deleteIconImage = deleteIcon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
@@ -202,10 +245,10 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
         buttonDelete.setActionCommand("delete");
         buttonDelete.setMargin(buttonMargins);
         buttonDelete.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
-        buttonDelete.setPreferredSize(preferredButtonDimension);
+        buttonDelete.setPreferredSize(preferredButtonSize);
         buttonDelete.addActionListener(this);
         constraints.gridx = 2;
-        dataControlPanel.add(buttonDelete, constraints);
+        buttonsPanel.add(buttonDelete);
 
         ListSelectionModel tableSelectionModel = searchResultTable.getSelectionModel();
         tableSelectionModel.addListSelectionListener(this);
@@ -217,15 +260,15 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
     public void valueChanged(ListSelectionEvent e) {
         int selectedTableRow = searchResultTable.getSelectionModel().getMinSelectionIndex();
         if (selectedTableRow < 0) {
-            for (JTextField movieDataField : movieDataFields) {
+            for (JTextComponent movieDataField : movieDataFields) {
                 movieDataField.setText("");
             }
             return;
         }
 
         int movieIndex = searchResultTable.getRowSorter().convertRowIndexToModel(selectedTableRow);
-        for (int i = 0; i < movieDataFields.length; i++) {
-            movieDataFields[i].setText((String) searchResultTable.getModel().getValueAt(movieIndex, i));
+        for (int i = 0; i < movieDataFields.size(); i++) {
+            movieDataFields.get(i).setText((String) searchResultTable.getModel().getValueAt(movieIndex, i));
         }
     }
 
@@ -239,28 +282,33 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
                     return;
                 }
                 boolean createdSuccessfully = tableDataModel.addMovie(new Movie(
-                        movieDataFields[1].getText().trim(),
-                        Integer.parseInt(movieDataFields[2].getText().trim()),
-                        movieDataFields[3].getText().trim()
+                        movieDataFields.get(1).getText().trim(),
+                        Integer.parseInt(movieDataFields.get(2).getText().trim()),
+                        movieDataFields.get(3).getText().trim(),
+                        movieDataFields.get(4).getText().trim()
                 ));
                 if (!createdSuccessfully) {
                     JOptionPane.showMessageDialog(window, "Movie record already exists!", "Conflict", JOptionPane.ERROR_MESSAGE);
                 }
+                tableColumnAdjuster.adjustColumns();
                 break;
             case "delete":
-                tableDataModel.deleteMovie(Long.parseLong(movieDataFields[0].getText().trim()));
+                tableDataModel.deleteMovie(Long.parseLong(movieDataFields.get(0).getText().trim()));
+                tableColumnAdjuster.adjustColumns();
                 break;
             case "save":
                 if(!checkDataValidity()) {
                     return;
                 }
                 checkDataValidity();
-                tableDataModel.updateMovie(new Movie(
-                        Long.parseLong(movieDataFields[0].getText().trim()),
-                        movieDataFields[1].getText().trim(),
-                        Integer.parseInt(movieDataFields[2].getText().trim()),
-                        movieDataFields[3].getText().trim()
-                ));
+                tableDataModel.updateMovie(
+                        Long.parseLong(movieDataFields.get(0).getText().trim()),
+                        movieDataFields.get(1).getText().trim(),
+                        Integer.parseInt(movieDataFields.get(2).getText().trim()),
+                        movieDataFields.get(3).getText().trim(),
+                        movieDataFields.get(4).getText().trim()
+                );
+                tableColumnAdjuster.adjustColumns();
                 break;
             case "search":
                 String searchTerm = searchBar.getText().trim();
@@ -269,14 +317,15 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
                 tableSorter.setRowFilter(rowFilter);
                 tableDataModel.fireTableDataChanged();
                 searchResultTable.getSelectionModel().clearSelection();
+                tableColumnAdjuster.adjustColumns();
         }
     }
 
     private boolean checkDataValidity() {
         StringJoiner emptyFields = new StringJoiner(", ");
         short emptyFieldsCount = 0;
-        for (int i = 1; i < movieDataFields.length; i++) {
-            if(movieDataFields[i].getText().isBlank()) {
+        for (int i = 1; i < movieDataFields.size(); i++) {
+            if(movieDataFields.get(i).getText().isBlank()) {
                 emptyFields.add(Movie.TABLE_COLUMN_NAMES[i]);
                 emptyFieldsCount++;
             }

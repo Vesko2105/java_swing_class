@@ -42,12 +42,13 @@ public class TableDataModel extends AbstractTableModel {
         fireTableDataChanged();
     }
 
-    public void updateMovie(Movie updatedMovie) {
-        movies.stream().filter(movie -> movie.getId() == updatedMovie.getId()).findFirst().ifPresent(
+    public void updateMovie(long id, String title, int yearReleased, String director, String description) {
+        movies.stream().filter(movie -> movie.getId() == id).findFirst().ifPresent(
                 movie -> {
-                    movie.setTitle(updatedMovie.getTitle());
-                    movie.setDirector(updatedMovie.getDirector());
-                    movie.setYearReleased(updatedMovie.getYearReleased());
+                    movie.setTitle(title);
+                    movie.setYearReleased(yearReleased);
+                    movie.setDirector(director);
+                    movie.setDescription(description);
                 }
         );
         fireTableDataChanged();
