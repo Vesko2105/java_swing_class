@@ -5,21 +5,14 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableRowSorter;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 
 // TODO: 5/18/2023 Trim input from text fields
 
-public class MainWindow implements ActionListener, ListSelectionListener, KeyListener {
-    private JFrame window;
-    private static final Font GLOBAL_FONT = new Font("Consolas", Font.PLAIN, 14);
-    private static Color mainBackgroundColor = new Color(38, 142, 213, 255);
-    private static Color mainDarkColor = new Color(15, 58, 87);
+public class MainWindow extends JFrame implements ActionListener, ListSelectionListener, KeyListener, FocusListener {
 
     private JTable searchResultTable;
     TableColumnAdjuster tableColumnAdjuster;
@@ -31,57 +24,57 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
     private JButton searchButton;
 
     public MainWindow() {
+        super();
         init();
     }
 
     private void init() {
         //-------- Frame settings -----------
-        window = new JFrame();
-        window.setSize(800, 700);
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        window.setLayout(new BoxLayout(window.getContentPane(), BoxLayout.Y_AXIS));
-        window.setBackground(mainBackgroundColor);
-        window.setLocationRelativeTo(null);
+        this.setSize(800, 700);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
+        this.setBackground(SystemSettings.mainBackgroundColor);
+        this.setLocationRelativeTo(null);
 
         //-------- Title area --------
         JPanel titlePanel = new JPanel();
         titlePanel.setBackground(new Color(13, 50, 79));
-        window.add(titlePanel);
+        this.add(titlePanel);
 
         JLabel title = new JLabel("My Movie Manager");
-        title.setFont(GLOBAL_FONT.deriveFont(32F));
+        title.setFont(SystemSettings.GLOBAL_FONT.deriveFont(32F));
         title.setForeground(new Color(218, 221, 222, 255));
         titlePanel.add(title);
 
         //-------- Search controls area --------
         JPanel searchControlsPanel = new JPanel(new FlowLayout());
-        searchControlsPanel.setBackground(mainBackgroundColor);
-        window.add(searchControlsPanel);
+        searchControlsPanel.setBackground(SystemSettings.mainBackgroundColor);
+        this.add(searchControlsPanel);
 
         searchBar = new JTextField(30);
-        searchBar.setFont(GLOBAL_FONT);
+        searchBar.setFont(SystemSettings.GLOBAL_FONT);
         searchBar.addKeyListener(this);
         searchControlsPanel.add(searchBar);
 
         searchButton = new JButton("SEARCH");
-        searchButton.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
+        searchButton.setFont(SystemSettings.GLOBAL_FONT.deriveFont(Font.BOLD));
         searchButton.setActionCommand("search");
         searchButton.addActionListener(this);
         searchControlsPanel.add(searchButton);
 
         //-------- Search results area --------
         JPanel searchResultPanel = new JPanel(new BorderLayout());
-        searchResultPanel.setBackground(mainBackgroundColor);
+        searchResultPanel.setBackground(SystemSettings.mainBackgroundColor);
         searchResultPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createEmptyBorder(0, 50, 0, 50),
                 BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(mainDarkColor),
+                        BorderFactory.createLineBorder(SystemSettings.mainDarkColor),
                         "Results",
                         TitledBorder.CENTER,
                         TitledBorder.TOP
                 )
         ));
-        window.add(searchResultPanel);
+        this.add(searchResultPanel);
 
         TableDataModel tableDataModel = new TableDataModel();
         TableRowSorter<TableDataModel> tableRowSorter = new TableRowSorter<>(tableDataModel);
@@ -89,7 +82,7 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
         searchResultTable = new JTable(tableDataModel);
         searchResultTable.setRowSorter(tableRowSorter);
         searchResultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        searchResultTable.setFont(GLOBAL_FONT);
+        searchResultTable.setFont(SystemSettings.GLOBAL_FONT);
         searchResultTable.setBorder(null);
         searchResultTable.addKeyListener(this);
 
@@ -99,7 +92,7 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
         tableColumnAdjuster.adjustColumns();
 
         JScrollPane scrollablePane = new JScrollPane(searchResultTable);
-        scrollablePane.setBackground(mainBackgroundColor);
+        scrollablePane.setBackground(SystemSettings.mainBackgroundColor);
         scrollablePane.setCorner(
                 JScrollPane.UPPER_RIGHT_CORNER,
                 new TableCorner(searchResultTable.getTableHeader().getBackground())
@@ -118,8 +111,8 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
                         TitledBorder.TOP
                 )
         ));
-        dataControlPanel.setBackground(mainBackgroundColor);
-        window.add(dataControlPanel);
+        dataControlPanel.setBackground(SystemSettings.mainBackgroundColor);
+        this.add(dataControlPanel);
 
         GridBagConstraints constraints = new GridBagConstraints();
 
@@ -135,7 +128,7 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
 
         for (int i = 0; i < Movie.TABLE_COLUMN_NAMES.length - 1; i++) {
             JLabel label = new JLabel(tableDataModel.getColumnName(i));
-            label.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
+            label.setFont(SystemSettings.GLOBAL_FONT.deriveFont(Font.BOLD));
             dataControlPanel.add(label, constraints);
             constraints.gridy++;
         }
@@ -148,7 +141,7 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
         constraints.anchor = GridBagConstraints.CENTER;
 
         JLabel label = new JLabel(tableDataModel.getColumnName(Movie.TABLE_COLUMN_NAMES.length - 1));
-        label.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
+        label.setFont(SystemSettings.GLOBAL_FONT.deriveFont(Font.BOLD));
         dataControlPanel.add(label, constraints);
 
         //********** Data control text fields **********
@@ -165,10 +158,11 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
 
         for (int i = 0; i < Movie.TABLE_COLUMN_NAMES.length - 1; i++) {
 
-            JTextField currentTextField = new JTextField();
+            JTextField currentTextField = new MyTextField();
             movieDataFields.add(i, currentTextField);
-            currentTextField.setBorder(BorderFactory.createLineBorder(mainDarkColor));
-            currentTextField.setFont(GLOBAL_FONT);
+            currentTextField.setBorder(BorderFactory.createLineBorder(SystemSettings.mainDarkColor));
+            currentTextField.setFont(SystemSettings.GLOBAL_FONT);
+            currentTextField.addFocusListener(this);
 
             dataControlPanel.add(currentTextField, constraints);
             constraints.gridy++;
@@ -182,11 +176,12 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
         constraints.insets.set(10, 30, 10, 30);
         constraints.fill = GridBagConstraints.BOTH;
 
-        JTextArea textArea = new JTextArea();
-        textArea.setBorder(BorderFactory.createLineBorder(mainDarkColor));
-        textArea.setFont(GLOBAL_FONT);
+        JTextArea textArea = new MyTextArea();
+        textArea.setBorder(BorderFactory.createLineBorder(SystemSettings.mainDarkColor));
+        textArea.setFont(SystemSettings.GLOBAL_FONT);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
+        textArea.addFocusListener(this);
         movieDataFields.add(textArea);
 
         JScrollPane scrollPane = new JScrollPane(textArea);
@@ -205,7 +200,7 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
         constraints.fill = GridBagConstraints.HORIZONTAL;
 
         JPanel buttonsPanel = new JPanel();
-        buttonsPanel.setBackground(mainBackgroundColor);
+        buttonsPanel.setBackground(SystemSettings.mainBackgroundColor);
         ((FlowLayout)buttonsPanel.getLayout()).setHgap(30);
         dataControlPanel.add(buttonsPanel, constraints);
 
@@ -219,7 +214,7 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
         JButton buttonSave = new JButton("SAVE", saveIcon);
         buttonSave.setMargin(buttonMargins);
         buttonSave.setPreferredSize(preferredButtonSize);
-        buttonSave.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
+        buttonSave.setFont(SystemSettings.GLOBAL_FONT.deriveFont(Font.BOLD));
         buttonSave.setActionCommand("save");
         buttonSave.addActionListener(this);
         buttonsPanel.add(buttonSave);
@@ -231,7 +226,7 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
         JButton buttonCreate = new JButton("CREATE", createIcon);
         buttonCreate.setActionCommand("create");
         buttonCreate.setMargin(buttonMargins);
-        buttonCreate.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
+        buttonCreate.setFont(SystemSettings.GLOBAL_FONT.deriveFont(Font.BOLD));
         buttonCreate.setPreferredSize(preferredButtonSize);
         buttonCreate.addActionListener(this);
         constraints.gridx = 1;
@@ -244,7 +239,7 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
         JButton buttonDelete = new JButton("DELETE", deleteIcon);
         buttonDelete.setActionCommand("delete");
         buttonDelete.setMargin(buttonMargins);
-        buttonDelete.setFont(GLOBAL_FONT.deriveFont(Font.BOLD));
+        buttonDelete.setFont(SystemSettings.GLOBAL_FONT.deriveFont(Font.BOLD));
         buttonDelete.setPreferredSize(preferredButtonSize);
         buttonDelete.addActionListener(this);
         constraints.gridx = 2;
@@ -253,7 +248,7 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
         ListSelectionModel tableSelectionModel = searchResultTable.getSelectionModel();
         tableSelectionModel.addListSelectionListener(this);
 
-        window.setVisible(true);
+        this.setVisible(true);
     }
 
     @Override
@@ -278,7 +273,7 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
 
         switch (e.getActionCommand()) {
             case "create":
-                if(!checkDataValidity()) {
+                if (!checkDataValidity()) {
                     return;
                 }
                 boolean createdSuccessfully = tableDataModel.addMovie(new Movie(
@@ -288,20 +283,32 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
                         movieDataFields.get(4).getText().trim()
                 ));
                 if (!createdSuccessfully) {
-                    JOptionPane.showMessageDialog(window, "Movie record already exists!", "Conflict", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Movie record already exists!", "Conflict", JOptionPane.ERROR_MESSAGE);
                 }
-                tableColumnAdjuster.adjustColumns();
                 break;
             case "delete":
                 String id = movieDataFields.get(0).getText().trim();
                 if (id.isBlank()) {
+                    JOptionPane.showMessageDialog(this, "No record selected!", "Deletion Error", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                tableDataModel.deleteMovie(Long.parseLong(id));
-                tableColumnAdjuster.adjustColumns();
+                String[] options = {"Delete", "Cancel"};
+                int optionChosen = JOptionPane.showOptionDialog(
+                        this,
+                        "Are you sure you want to delete movie with ID: " + id,
+                        "Delete Confirmation",
+                        JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.WARNING_MESSAGE,
+                        null,
+                        options,
+                        options[1]
+                );
+                if (optionChosen == 0) {
+                    tableDataModel.deleteMovie(Long.parseLong(id));
+                }
                 break;
             case "save":
-                if(!checkDataValidity()) {
+                if (!checkForEmptySelection() || !checkDataValidity()) {
                     return;
                 }
                 checkDataValidity();
@@ -312,7 +319,6 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
                         movieDataFields.get(3).getText().trim(),
                         movieDataFields.get(4).getText().trim()
                 );
-                tableColumnAdjuster.adjustColumns();
                 break;
             case "search":
                 String searchTerm = searchBar.getText().trim();
@@ -324,24 +330,29 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
                 tableColumnAdjuster.adjustColumns();
         }
     }
+    
+    private boolean checkForEmptySelection() {
+        String id = movieDataFields.get(0).getText();
+        if (id.isBlank()) {
+            JOptionPane.showMessageDialog(this, "No record selected!", "Deletion Error", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        return true;
+    }
 
     private boolean checkDataValidity() {
         StringJoiner emptyFields = new StringJoiner(", ");
         short emptyFieldsCount = 0;
 
-        String id = movieDataFields.get(0).getText().trim();
-        if(id.isBlank()) {
-            return false;
-        }
-
         for (int i = 1; i < movieDataFields.size(); i++) {
-            if(movieDataFields.get(i).getText().isBlank()) {
+            if (movieDataFields.get(i).getText().isBlank()) {
+                ((ErrorHighlightable) movieDataFields.get(i)).markAsError();
                 emptyFields.add(Movie.TABLE_COLUMN_NAMES[i]);
                 emptyFieldsCount++;
             }
         }
 
-        if(emptyFieldsCount > 0) {
+        if (emptyFieldsCount > 0) {
             boolean multipleEmptyFields = emptyFieldsCount > 1;
             String message = String.format(
                     "The following data field%s %s empty: %s",
@@ -349,8 +360,15 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
                     multipleEmptyFields ? "are" : "is",
                     emptyFields
             );
-            JOptionPane.showMessageDialog(window , message, "Invalid Input", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, message, "Invalid Input", JOptionPane.WARNING_MESSAGE);
             return false;
+        }
+
+
+        try {
+            Integer.parseInt(movieDataFields.get(0).getText().trim());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid movie release year!", "Invalid Data", JOptionPane.ERROR_MESSAGE);
         }
 
         return true;
@@ -368,4 +386,14 @@ public class MainWindow implements ActionListener, ListSelectionListener, KeyLis
             searchButton.doClick();
         }
     }
+
+    @Override
+    public void focusGained(FocusEvent e) {
+        if (e.getComponent() instanceof ErrorHighlightable) {
+            ((ErrorHighlightable) e.getComponent()).reset();
+        }
+    }
+
+    @Override
+    public void focusLost(FocusEvent e) {}
 }
