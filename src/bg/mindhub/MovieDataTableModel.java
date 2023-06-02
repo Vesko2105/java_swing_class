@@ -1,11 +1,13 @@
+package bg.mindhub;
+
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TableDataModel extends AbstractTableModel {
-    List<Movie> movies;
+public class MovieDataTableModel extends AbstractTableModel {
+    private List<Movie> movies;
 
-    public TableDataModel() {
+    public MovieDataTableModel() {
         movies = new ArrayList<>();
     }
 
@@ -28,18 +30,22 @@ public class TableDataModel extends AbstractTableModel {
         return movies.get(rowIndex).toTableData()[columnIndex];
     }
 
+    public Movie getMovieAt(int index) {
+        return movies.get(index);
+    }
+
     public boolean addMovie(Movie movie) {
-        if (movies.contains(movie)) {
+        if (movie == null || movies.contains(movie)) {
             return false;
         }
-        fireTableDataChanged();
+        this.fireTableDataChanged();
         movies.add(movie);
         return true;
     }
 
     public void deleteMovie(long ID) {
         movies.removeIf(movie -> movie.getId() == ID);
-        fireTableDataChanged();
+        this.fireTableDataChanged();
     }
 
     public void updateMovie(long id, String title, int yearReleased, String director, String description) {
@@ -51,48 +57,8 @@ public class TableDataModel extends AbstractTableModel {
                     movie.setDescription(description);
                 }
         );
-        fireTableDataChanged();
+        this.fireTableDataChanged();
     }
-//    private String[] columnNames;
-//    private Object[][] data;
-//
-//    public TableDataModel(String[] columnNames, Object[][] data) {
-//        this.columnNames = columnNames;
-//        this.data = data;
-//    }
-//
-//    public int getColumnCount() {
-//        return columnNames.length;
-//    }
-//
-//    public int getRowCount() {
-//        return data.length;
-//    }
-//
-//    public String getColumnName(int col) {
-//        return columnNames[col];
-//    }
-//
-//    public Object getValueAt(int row, int col) {
-//        return data[row][col];
-//    }
-//
-//    public Class getColumnClass(int c) {
-//        return getValueAt(0, c).getClass();
-//    }
-//
-//    /*
-//     * Don't need to implement this method unless your table's
-//     * editable.
-//     */
-//    public boolean isCellEditable(int row, int col) {
-//        return col > 0;
-//    }
-//
-//    public void setValueAt(Object value, int row, int col) {
-//        data[row][col] = value;
-//        fireTableCellUpdated(row, col);
-//    }
 }
 
 

@@ -1,3 +1,5 @@
+package bg.mindhub;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
@@ -388,7 +390,7 @@ public class TableColumnAdjuster implements PropertyChangeListener, TableModelLi
     }
 
     /*
-     *  Toggle properties of the TableColumnAdjuster so the user can
+     *  Toggle properties of the bg.mindhub.TableColumnAdjuster so the user can
      *  customize the functionality to their preferences
      */
     class ToggleAction extends AbstractAction

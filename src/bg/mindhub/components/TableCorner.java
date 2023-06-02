@@ -1,3 +1,5 @@
+package bg.mindhub.components;
+
 import javax.swing.*;
 import java.awt.*;
 
