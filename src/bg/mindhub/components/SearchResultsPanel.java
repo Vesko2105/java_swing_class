@@ -30,6 +30,10 @@ public class SearchResultsPanel extends JPanel {
         movieDataTable.setFont(SystemSettings.GLOBAL_FONT);
         movieDataTable.setBorder(null);
 
+        TableColumnAdjuster tableColumnAdjuster = new TableColumnAdjuster(movieDataTable);
+        tableColumnAdjuster.setDynamicAdjustment(true);
+        tableColumnAdjuster.adjustColumns();
+
         JScrollPane scrollablePane = new JScrollPane(movieDataTable);
         scrollablePane.setBackground(SystemSettings.mainBackgroundColor);
         scrollablePane.setCorner(
@@ -45,8 +49,6 @@ public class SearchResultsPanel extends JPanel {
         //from the input in the search bar
         String regex = "(?i)" + searchTerm;
         RowFilter<MovieDataTableModel, Object> rowFilter = RowFilter.regexFilter(regex);
-        movieDataTable.setRowFilter(rowFilter);
-
-        movieDataTable.clearSelection();
+        movieDataTable.filterData(rowFilter);
     }
 }

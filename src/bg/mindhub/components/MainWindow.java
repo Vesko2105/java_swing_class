@@ -13,7 +13,6 @@ import java.util.List;
 // TODO: 5/18/2023 Trim input from text fields
 
 public class MainWindow extends JFrame implements ActionListener, ListSelectionListener, KeyListener {
-    TableColumnAdjuster tableColumnAdjuster;
 
     private SearchControlPanel searchControlPanel;
 
@@ -47,9 +46,8 @@ public class MainWindow extends JFrame implements ActionListener, ListSelectionL
 
         //-------- Movie Data --------
 
-        movieDataTable = new MovieDataTable();
+        movieDataTable = new MovieDataTable(this);
         movieDataTable.loadTestData();
-        movieDataTable.addListSelectionListener(this);
 
         //-------- Search results area --------
 
@@ -61,7 +59,6 @@ public class MainWindow extends JFrame implements ActionListener, ListSelectionL
         this.add(dataControlPanel);
 
         this.setVisible(true);
-        movieDataTable.refresh();
     }
 
     @Override
@@ -80,11 +77,18 @@ public class MainWindow extends JFrame implements ActionListener, ListSelectionL
     public void actionPerformed(ActionEvent e) {
         switch (e.getActionCommand()) {
             case "create":
-                Movie newMovie = dataControlPanel.createMovie();
-
-                if(newMovie == null) {
+                if(!dataControlPanel.checkDataValidity()) {
                     break;
                 }
+
+                List<String> movieData = dataControlPanel.getMovieData();
+
+                Movie newMovie = new Movie(
+                        movieData.get(1),
+                        Integer.parseInt(movieData.get(2)),
+                        movieData.get(3),
+                        movieData.get(4)
+                );
 
                 boolean addedSuccessfully = movieDataTable.addMovie(newMovie);
 
@@ -93,8 +97,9 @@ public class MainWindow extends JFrame implements ActionListener, ListSelectionL
                 }
 
                 break;
+
             case "delete":
-                long idToDelete = dataControlPanel.getIdFieldValue();
+                long idToDelete = dataControlPanel.getMovieId();
 
                 if(idToDelete == -1) {
                     JOptionPane.showMessageDialog(this, "No record selected!", "Deletion Error", JOptionPane.WARNING_MESSAGE);
@@ -118,24 +123,29 @@ public class MainWindow extends JFrame implements ActionListener, ListSelectionL
                 }
 
                 break;
+
             case "update":
-                long idToUpdate = dataControlPanel.getIdFieldValue();
+                long idToUpdate = dataControlPanel.getMovieId();
 
                 if(idToUpdate == -1) {
                     JOptionPane.showMessageDialog(this, "No record selected!", "Update Error", JOptionPane.WARNING_MESSAGE);
                     break;
                 }
 
-                List<String> data = dataControlPanel.getFieldValues();
-                if (data.isEmpty()) {
+                if(!dataControlPanel.checkDataValidity()) {
                     break;
                 }
+
+                List<String> data = dataControlPanel.getMovieData();
                 movieDataTable.updateMovie(data);
+
                 break;
+
             case "clear":
                 dataControlPanel.clearDataFields();
                 movieDataTable.clearSelection();
                 break;
+
             case "search":
                 searchResultsPanel.searchFor(searchControlPanel.getSearchBarContent());
         }

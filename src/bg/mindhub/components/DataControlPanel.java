@@ -18,11 +18,10 @@ public class DataControlPanel extends JPanel {
     public DataControlPanel(ActionListener buttonActionListener) {
         super(new GridBagLayout());
 
-
         this.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createEmptyBorder(20, 100, 20, 100),
                 BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(new Color(184, 207, 229)),
+                        BorderFactory.createLineBorder(SystemSettings.mainDarkColor),
                         "Edit Data",
                         TitledBorder.CENTER,
                         TitledBorder.TOP
@@ -43,11 +42,10 @@ public class DataControlPanel extends JPanel {
         constraints.anchor = GridBagConstraints.LINE_START;
 
         int tableColumnCount = Movie.TABLE_COLUMN_NAMES.length;
-        String[] columnNames = Arrays.copyOf(Movie.TABLE_COLUMN_NAMES, tableColumnCount);
+        String[] columnNames = Movie.TABLE_COLUMN_NAMES;
 
         for (int i = 0; i < tableColumnCount - 1; i++) {
             JLabel label = new JLabel(columnNames[i]);
-            label.setFont(SystemSettings.GLOBAL_FONT.deriveFont(Font.BOLD));
             this.add(label, constraints);
             constraints.gridy++;
         }
@@ -60,7 +58,6 @@ public class DataControlPanel extends JPanel {
         constraints.anchor = GridBagConstraints.CENTER;
 
         JLabel label = new JLabel(columnNames[tableColumnCount - 1]);
-        label.setFont(SystemSettings.GLOBAL_FONT.deriveFont(Font.BOLD));
         this.add(label, constraints);
 
         //********** Data control text fields **********
@@ -76,11 +73,8 @@ public class DataControlPanel extends JPanel {
         constraints.fill = GridBagConstraints.HORIZONTAL;
 
         for (int i = 0; i < Movie.TABLE_COLUMN_NAMES.length - 1; i++) {
-
             JTextField currentTextField = new MyTextField();
             movieDataFields.add(i, currentTextField);
-            currentTextField.setBorder(BorderFactory.createLineBorder(SystemSettings.mainDarkColor));
-            currentTextField.setFont(SystemSettings.GLOBAL_FONT);
 
             this.add(currentTextField, constraints);
             constraints.gridy++;
@@ -95,8 +89,6 @@ public class DataControlPanel extends JPanel {
         constraints.fill = GridBagConstraints.BOTH;
 
         JTextArea textArea = new MyTextArea();
-        textArea.setBorder(BorderFactory.createLineBorder(SystemSettings.mainDarkColor));
-        textArea.setFont(SystemSettings.GLOBAL_FONT);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
         movieDataFields.add(textArea);
@@ -116,63 +108,24 @@ public class DataControlPanel extends JPanel {
         constraints.insets.set(0, 0, 0, 0);
         constraints.fill = GridBagConstraints.HORIZONTAL;
 
-        JPanel buttonsPanel = new JPanel();
+        FlowLayout buttonPanelLayout = new FlowLayout();
+        buttonPanelLayout.setHgap(30);
+
+        JPanel buttonsPanel = new JPanel(buttonPanelLayout);
         buttonsPanel.setBackground(SystemSettings.mainBackgroundColor);
-        ((FlowLayout)buttonsPanel.getLayout()).setHgap(30);
         this.add(buttonsPanel, constraints);
 
-        Dimension preferredButtonSize = new Dimension(100, 30);
-        Insets buttonMargins = new Insets(0, 0, 0, 0);
+        MyButton clearButton = new MyButton("CLEAR", "clear", buttonActionListener, "icons/clearIcon.png");
+        buttonsPanel.add(clearButton);
 
-        ImageIcon clearIcon = new ImageIcon("icons/clearIcon.png");
-        Image clearIconImage = clearIcon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
-        clearIcon = new ImageIcon(clearIconImage);
+        MyButton updateButton = new MyButton("UPDATE", "update", buttonActionListener, "icons/updateIcon.png");
+        buttonsPanel.add(updateButton);
 
-        JButton buttonclear = new JButton("CLEAR", clearIcon);
-        buttonclear.setMargin(buttonMargins);
-        buttonclear.setPreferredSize(preferredButtonSize);
-        buttonclear.setFont(SystemSettings.GLOBAL_FONT.deriveFont(Font.BOLD));
-        buttonclear.setActionCommand("clear");
-        buttonclear.addActionListener(buttonActionListener);
-        buttonsPanel.add(buttonclear);
+        MyButton createButton = new MyButton("CREATE", "create", buttonActionListener, "icons/createIcon.png");
+        buttonsPanel.add(createButton);
 
-        ImageIcon updateIcon = new ImageIcon("icons/updateIcon.png");
-        Image updateIconImage = updateIcon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
-        updateIcon = new ImageIcon(updateIconImage);
-
-        JButton buttonUpdate = new JButton("UPDATE", updateIcon);
-        buttonUpdate.setMargin(buttonMargins);
-        buttonUpdate.setPreferredSize(preferredButtonSize);
-        buttonUpdate.setFont(SystemSettings.GLOBAL_FONT.deriveFont(Font.BOLD));
-        buttonUpdate.setActionCommand("update");
-        buttonUpdate.addActionListener(buttonActionListener);
-        buttonsPanel.add(buttonUpdate);
-
-        ImageIcon createIcon = new ImageIcon("icons/createIcon.png");
-        Image createIconImage = createIcon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
-        createIcon = new ImageIcon(createIconImage);
-
-        JButton buttonCreate = new JButton("CREATE", createIcon);
-        buttonCreate.setActionCommand("create");
-        buttonCreate.setMargin(buttonMargins);
-        buttonCreate.setFont(SystemSettings.GLOBAL_FONT.deriveFont(Font.BOLD));
-        buttonCreate.setPreferredSize(preferredButtonSize);
-        buttonCreate.addActionListener(buttonActionListener);
-        constraints.gridx = 1;
-        buttonsPanel.add(buttonCreate);
-
-        ImageIcon deleteIcon = new ImageIcon("icons/deleteIcon.png");
-        Image deleteIconImage = deleteIcon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
-        deleteIcon = new ImageIcon(deleteIconImage);
-
-        JButton buttonDelete = new JButton("DELETE", deleteIcon);
-        buttonDelete.setActionCommand("delete");
-        buttonDelete.setMargin(buttonMargins);
-        buttonDelete.setFont(SystemSettings.GLOBAL_FONT.deriveFont(Font.BOLD));
-        buttonDelete.setPreferredSize(preferredButtonSize);
-        buttonDelete.addActionListener(buttonActionListener);
-        constraints.gridx = 2;
-        buttonsPanel.add(buttonDelete);
+        MyButton deleteButton = new MyButton("DELETE", "delete", buttonActionListener, "icons/deleteIcon.png");
+        buttonsPanel.add(deleteButton);
     }
 
     public void updateFields(Movie movie) {
@@ -188,7 +141,7 @@ public class DataControlPanel extends JPanel {
         }
     }
 
-    public long getIdFieldValue() {
+    public long getMovieId() {
         String id = movieDataFields.get(0).getText().trim();
         if (id.isBlank()) {
             return -1L;
@@ -196,26 +149,14 @@ public class DataControlPanel extends JPanel {
         return Long.parseLong(id);
     }
 
-    public List<String> getFieldValues() {
-        if (!checkDataValidity()) {
-            return Collections.emptyList();
-        }
-        return movieDataFields.stream().map(JTextComponent::getText).collect(Collectors.toList());
+    public List<String> getMovieData() {
+        return movieDataFields.stream()
+                .map(JTextComponent::getText)
+                .map(String::trim)
+                .collect(Collectors.toList());
     }
 
-    public Movie createMovie() {
-        if (!checkDataValidity()) {
-            return null;
-        }
-        return new Movie(
-                movieDataFields.get(1).getText().trim(),
-                Integer.parseInt(movieDataFields.get(2).getText().trim()),
-                movieDataFields.get(3).getText().trim(),
-                movieDataFields.get(4).getText().trim()
-        );
-    }
-
-    private boolean checkDataValidity() {
+    public boolean checkDataValidity() {
         StringJoiner emptyFields = new StringJoiner(", ");
         short emptyFieldsCount = 0;
 

@@ -8,8 +8,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 
 public class SearchControlPanel extends JPanel {
-    private JTextField searchBar;
-    private JButton searchButton;
+    private final JTextField searchBar;
+    private final JButton searchButton;
 
     public static String SEARCH_ACTION_COMMAND = "search";
 

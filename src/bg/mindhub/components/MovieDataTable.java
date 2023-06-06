@@ -10,21 +10,16 @@ import javax.swing.table.TableRowSorter;
 import java.util.List;
 
 public class MovieDataTable extends JTable {
-    private MovieDataTableModel movieDataTableModel;
-    private TableRowSorter<MovieDataTableModel> tableRowSorter;
-    private TableColumnAdjuster tableColumnAdjuster;
-    public MovieDataTable() {
+    private final MovieDataTableModel movieDataTableModel;
+
+    private final TableRowSorter<MovieDataTableModel> tableRowSorter;
+
+    public MovieDataTable(ListSelectionListener listSelectionListener) {
         movieDataTableModel = new MovieDataTableModel();
         tableRowSorter = new TableRowSorter<>(movieDataTableModel);
-        tableColumnAdjuster = new TableColumnAdjuster(this);
 
         this.setModel(movieDataTableModel);
         this.setRowSorter(tableRowSorter);
-
-        this.refresh();
-    }
-
-    public void addListSelectionListener(ListSelectionListener listSelectionListener) {
         this.getSelectionModel().addListSelectionListener(listSelectionListener);
     }
 
@@ -34,9 +29,7 @@ public class MovieDataTable extends JTable {
     }
 
     public boolean addMovie(Movie movie) {
-        boolean addedSuccessfully = movieDataTableModel.addMovie(movie);
-        this.refresh();
-        return addedSuccessfully;
+        return movieDataTableModel.addMovie(movie);
     }
 
     public void updateMovie(List<String> data) {
@@ -48,26 +41,20 @@ public class MovieDataTable extends JTable {
                     data.get(3),
                     data.get(4)
             );
-            this.refresh();
         } catch (Exception ignored) {}
     }
 
     public void deleteMovie(long id) {
         movieDataTableModel.deleteMovie(id);
-        this.refresh();
+    }
+
+    public void filterData(RowFilter<MovieDataTableModel, Object> rowFilter) {
+        tableRowSorter.setRowFilter(rowFilter);
     }
 
     public void loadTestData() {
         if(movieDataTableModel.getRowCount() == 0) {
             Movie.getTestData().forEach(movieDataTableModel::addMovie);
         }
-    }
-
-    public void setRowFilter(RowFilter<MovieDataTableModel, Object> rowFilter) {
-        tableRowSorter.setRowFilter(rowFilter);
-    }
-
-    public void refresh() {
-        tableColumnAdjuster.adjustColumns();
     }
 }
