@@ -1,8 +1,12 @@
 package bg.mindhub.components;
 
+import bg.mindhub.Genre;
 import bg.mindhub.Movie;
 import bg.mindhub.SystemSettings;
-import bg.mindhub.TableColumnAdjuster;
+import bg.mindhub.components.panels.DataControlPanel;
+import bg.mindhub.components.panels.SearchControlPanel;
+import bg.mindhub.components.panels.SearchResultsPanel;
+import bg.mindhub.components.panels.TitlePanel;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -12,7 +16,7 @@ import java.util.List;
 
 // TODO: 5/18/2023 Trim input from text fields
 
-public class MainWindow extends JFrame implements ActionListener, ListSelectionListener, KeyListener {
+public class MainWindow extends JFrame implements ActionListener, ListSelectionListener, ItemListener {
 
     private SearchControlPanel searchControlPanel;
 
@@ -86,14 +90,17 @@ public class MainWindow extends JFrame implements ActionListener, ListSelectionL
                 Movie newMovie = new Movie(
                         movieData.get(1),
                         Integer.parseInt(movieData.get(2)),
-                        movieData.get(3),
-                        movieData.get(4)
+                        Genre.from(movieData.get(3)),
+                        movieData.get(4),
+                        movieData.get(5)
                 );
 
                 boolean addedSuccessfully = movieDataTable.addMovie(newMovie);
 
                 if (!addedSuccessfully) {
                     JOptionPane.showMessageDialog(this, "Movie record already exists!", "Conflict", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Movie record created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 }
 
                 break;
@@ -147,20 +154,28 @@ public class MainWindow extends JFrame implements ActionListener, ListSelectionL
                 break;
 
             case "search":
-                searchResultsPanel.searchFor(searchControlPanel.getSearchBarContent());
+                movieDataTable.searchFor(searchControlPanel.getSearchBarContent());
         }
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {}
+    public void itemStateChanged(ItemEvent e) {
+        if (!(e.getSource() instanceof MyCheckbox)) {
+            return;
+        }
 
-    @Override
-    public void keyPressed(KeyEvent e) {}
+        MyCheckbox eventSource = (MyCheckbox) e.getSource();
 
-    @Override
-    public void keyReleased(KeyEvent e) {
-        if(e.getKeyCode() == KeyEvent.VK_ENTER && e.getComponent().getName().equals("searchBar")) {
-            searchControlPanel.activateSearch();
+        Genre selectedGenre = Genre.from(eventSource.getText());
+
+        if (selectedGenre == null) {
+            return;
+        }
+
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            movieDataTable.addGenreFilter(selectedGenre);
+        } else {
+            movieDataTable.removeGenreFilter(selectedGenre);
         }
     }
 }

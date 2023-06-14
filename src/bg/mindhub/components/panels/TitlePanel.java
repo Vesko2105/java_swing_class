@@ -1,4 +1,4 @@
-package bg.mindhub.components;
+package bg.mindhub.components.panels;
 
 import bg.mindhub.SystemSettings;
 

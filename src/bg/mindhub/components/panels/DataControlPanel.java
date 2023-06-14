@@ -1,6 +1,10 @@
-package bg.mindhub.components;
+package bg.mindhub.components.panels;
 
 import bg.mindhub.*;
+import bg.mindhub.components.MyButton;
+import bg.mindhub.components.MyDropdown;
+import bg.mindhub.components.MyTextArea;
+import bg.mindhub.components.MyTextField;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -13,7 +17,9 @@ import java.util.stream.Collectors;
 
 public class DataControlPanel extends JPanel {
 
+    private static final int DROPDOWN_Y = 3;
     private List<JTextComponent> movieDataFields;
+    private MyDropdown genreDropdown;
 
     public DataControlPanel(ActionListener buttonActionListener) {
         super(new GridBagLayout());
@@ -52,7 +58,7 @@ public class DataControlPanel extends JPanel {
 
         constraints.gridx = 3;
         constraints.gridy = 0;
-        constraints.gridwidth = 3;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
         constraints.weightx = 0.5;
         constraints.insets.right = 30;
         constraints.anchor = GridBagConstraints.CENTER;
@@ -73,17 +79,25 @@ public class DataControlPanel extends JPanel {
         constraints.fill = GridBagConstraints.HORIZONTAL;
 
         for (int i = 0; i < Movie.TABLE_COLUMN_NAMES.length - 1; i++) {
-            JTextField currentTextField = new MyTextField();
-            movieDataFields.add(i, currentTextField);
+            if (i != DROPDOWN_Y) {
+                JTextField currentTextField = new MyTextField();
 
-            this.add(currentTextField, constraints);
+                movieDataFields.add(currentTextField);
+
+                this.add(currentTextField, constraints);
+            }
             constraints.gridy++;
         }
 
+        constraints.gridy = DROPDOWN_Y;
+
+        genreDropdown = new MyDropdown(Genre.values(), "Select genre...");
+        this.add(genreDropdown, constraints);
+
         constraints.gridx = 3;
         constraints.gridy = 1;
-        constraints.gridwidth = 3;
-        constraints.gridheight = 3;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.gridheight = movieDataFields.size() - 1;
         constraints.weightx = 0.5;
         constraints.insets.set(10, 30, 10, 30);
         constraints.fill = GridBagConstraints.BOTH;
@@ -101,7 +115,7 @@ public class DataControlPanel extends JPanel {
 
         //********** Data control buttons **********
         constraints.gridx = 0;
-        constraints.gridy = 4;
+        constraints.gridy = movieDataFields.size();
         constraints.gridwidth = 6;
         constraints.weightx = 1;
         constraints.ipady = 0;
@@ -129,16 +143,26 @@ public class DataControlPanel extends JPanel {
     }
 
     public void updateFields(Movie movie) {
-        String[] data = movie.toTableData();
-        for (int i = 0; i < movieDataFields.size(); i++) {
-            movieDataFields.get(i).setText(data[i]);
+        movieDataFields.get(0).setText(String.valueOf(movie.getId()));
+        movieDataFields.get(1).setText(movie.getTitle());
+        movieDataFields.get(2).setText(String.valueOf(movie.getYearReleased()));
+        genreDropdown.setSelectedItem(movie.getGenre().toString());
+        movieDataFields.get(3).setText(movie.getDirector());
+        movieDataFields.get(4).setText(movie.getDescription());
+
+        for (JTextComponent movieDataField : movieDataFields) {
+            ComponentHighlighter.reset(movieDataField);
         }
+        ComponentHighlighter.reset(genreDropdown);
     }
 
     public void clearDataFields() {
         for (JTextComponent movieDataField : movieDataFields) {
             movieDataField.setText("");
+            ComponentHighlighter.reset(movieDataField);
         }
+        genreDropdown.setSelectedIndex(0);
+        ComponentHighlighter.reset(genreDropdown);
     }
 
     public long getMovieId() {
@@ -162,10 +186,16 @@ public class DataControlPanel extends JPanel {
 
         for (int i = 1; i < movieDataFields.size(); i++) {
             if (movieDataFields.get(i).getText().isBlank()) {
-                TextFieldHighlighter.markAsError(movieDataFields.get(i));
+                ComponentHighlighter.markAsError(movieDataFields.get(i));
                 emptyFields.add(Movie.TABLE_COLUMN_NAMES[i]);
                 emptyFieldsCount++;
             }
+        }
+
+        if (Genre.from((String) genreDropdown.getSelectedItem()) == null) {
+            ComponentHighlighter.markAsError(genreDropdown);
+            emptyFields.add(Movie.TABLE_COLUMN_NAMES[DROPDOWN_Y]);
+            emptyFieldsCount++;
         }
 
         if (emptyFieldsCount > 0) {
@@ -185,7 +215,7 @@ public class DataControlPanel extends JPanel {
         try {
             Integer.parseInt(yearReleasedField.getText().trim());
         } catch (NumberFormatException e) {
-            TextFieldHighlighter.markAsError(yearReleasedField);
+            ComponentHighlighter.markAsError(yearReleasedField);
             JOptionPane.showMessageDialog(this, "Invalid movie release year!", "Invalid Data", JOptionPane.ERROR_MESSAGE);
             return false;
         }

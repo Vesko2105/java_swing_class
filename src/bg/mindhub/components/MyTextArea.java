@@ -1,10 +1,9 @@
 package bg.mindhub.components;
 
 import bg.mindhub.SystemSettings;
-import bg.mindhub.TextFieldHighlighter;
+import bg.mindhub.ComponentHighlighter;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
@@ -18,7 +17,7 @@ public class MyTextArea extends JTextArea implements FocusListener {
 
     @Override
     public void focusGained(FocusEvent e) {
-        TextFieldHighlighter.reset(this);
+        ComponentHighlighter.reset(this);
     }
 
     @Override

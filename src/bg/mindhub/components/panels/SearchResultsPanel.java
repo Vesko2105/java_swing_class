@@ -1,6 +1,8 @@
-package bg.mindhub.components;
+package bg.mindhub.components.panels;
 
 import bg.mindhub.*;
+import bg.mindhub.components.MovieDataTable;
+import bg.mindhub.components.TableCorner;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -13,7 +15,6 @@ public class SearchResultsPanel extends JPanel {
     public SearchResultsPanel(MovieDataTable movieDataTable) {
         super(new BorderLayout());
 
-        this.setMaximumSize(new Dimension(1000, 100));
         this.setBackground(SystemSettings.mainBackgroundColor);
         this.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createEmptyBorder(0, 50, 0, 50),
@@ -42,13 +43,5 @@ public class SearchResultsPanel extends JPanel {
         );
         scrollablePane.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         this.add(scrollablePane, BorderLayout.CENTER);
-    }
-
-    public void searchFor(String searchTerm) {
-        //This makes a case-insensitive regex derived
-        //from the input in the search bar
-        String regex = "(?i)" + searchTerm;
-        RowFilter<MovieDataTableModel, Object> rowFilter = RowFilter.regexFilter(regex);
-        movieDataTable.filterData(rowFilter);
     }
 }
