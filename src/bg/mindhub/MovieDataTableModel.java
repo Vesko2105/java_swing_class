@@ -3,6 +3,7 @@ package bg.mindhub;
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MovieDataTableModel extends AbstractTableModel {
     private List<Movie> movies;
@@ -48,7 +49,13 @@ public class MovieDataTableModel extends AbstractTableModel {
         this.fireTableDataChanged();
     }
 
-    public void updateMovie(long id, String title, int yearReleased, String director, String description) {
+    public void updateMovie(Map<String, String> movieData) {
+        int id = Integer.parseInt(movieData.get(Movie.ID));
+        String title = movieData.get(Movie.TITLE);
+        int yearReleased = Integer.parseInt(movieData.get(Movie.YEAR_RELEASED));
+        String director = movieData.get(Movie.DIRECTOR);
+        String description = movieData.get(Movie.DESCRIPTION);
+
         movies.stream().filter(movie -> movie.getId() == id).findFirst().ifPresent(
                 movie -> {
                     movie.setTitle(title);
@@ -57,6 +64,7 @@ public class MovieDataTableModel extends AbstractTableModel {
                     movie.setDescription(description);
                 }
         );
+
         this.fireTableDataChanged();
     }
 }

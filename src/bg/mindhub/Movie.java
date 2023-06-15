@@ -13,13 +13,20 @@ public class Movie {
 
     private static int CURRENT_ID = 0;
 
+
+    public final static String ID = "ID";
+    public final static String TITLE = "Title";
+    public final static String YEAR_RELEASED = "Year Released";
+    public final static String GENRE = "Genre";
+    public final static String DIRECTOR = "Director";
+    public final static String DESCRIPTION = "Description";
     public static final String[] TABLE_COLUMN_NAMES = {
-            "ID",
-            "Title",
-            "Year Released",
-            "Genre",
-            "Director",
-            "Description"
+            ID,
+            TITLE,
+            YEAR_RELEASED,
+            GENRE,
+            DIRECTOR,
+            DESCRIPTION
     };
 
     public Movie() {

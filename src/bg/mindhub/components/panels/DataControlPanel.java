@@ -27,13 +27,13 @@ public class DataControlPanel extends JPanel {
         this.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createEmptyBorder(20, 100, 20, 100),
                 BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(SystemSettings.mainDarkColor),
+                        BorderFactory.createLineBorder(SystemSettings.MAIN_DARK_COLOR),
                         "Edit Data",
                         TitledBorder.CENTER,
                         TitledBorder.TOP
                 )
         ));
-        this.setBackground(SystemSettings.mainBackgroundColor);
+        this.setBackground(SystemSettings.MAIN_BACKGROUND_COLOR);
 
         GridBagConstraints constraints = new GridBagConstraints();
 
@@ -126,19 +126,19 @@ public class DataControlPanel extends JPanel {
         buttonPanelLayout.setHgap(30);
 
         JPanel buttonsPanel = new JPanel(buttonPanelLayout);
-        buttonsPanel.setBackground(SystemSettings.mainBackgroundColor);
+        buttonsPanel.setBackground(SystemSettings.MAIN_BACKGROUND_COLOR);
         this.add(buttonsPanel, constraints);
 
-        MyButton clearButton = new MyButton("CLEAR", "clear", buttonActionListener, "icons/clearIcon.png");
+        MyButton clearButton = new MyButton("CLEAR", "clear", buttonActionListener, SystemSettings.CLEAR_ICON_PATH);
         buttonsPanel.add(clearButton);
 
-        MyButton updateButton = new MyButton("UPDATE", "update", buttonActionListener, "icons/updateIcon.png");
+        MyButton updateButton = new MyButton("UPDATE", "update", buttonActionListener, SystemSettings.UPDATE_ICON_PATH);
         buttonsPanel.add(updateButton);
 
-        MyButton createButton = new MyButton("CREATE", "create", buttonActionListener, "icons/createIcon.png");
+        MyButton createButton = new MyButton("CREATE", "create", buttonActionListener, SystemSettings.CREATE_ICON_PATH);
         buttonsPanel.add(createButton);
 
-        MyButton deleteButton = new MyButton("DELETE", "delete", buttonActionListener, "icons/deleteIcon.png");
+        MyButton deleteButton = new MyButton("DELETE", "delete", buttonActionListener, SystemSettings.DELETE_ICON_PATH);
         buttonsPanel.add(deleteButton);
     }
 
@@ -173,11 +173,16 @@ public class DataControlPanel extends JPanel {
         return Long.parseLong(id);
     }
 
-    public List<String> getMovieData() {
-        return movieDataFields.stream()
-                .map(JTextComponent::getText)
-                .map(String::trim)
-                .collect(Collectors.toList());
+    public Map<String, String> getMovieData() {
+        Map<String, String> movieData = new HashMap<>();
+        movieData.put(Movie.ID, movieDataFields.get(0).getText());
+        movieData.put(Movie.TITLE, movieDataFields.get(1).getText());
+        movieData.put(Movie.YEAR_RELEASED, movieDataFields.get(2).getText());
+        movieData.put(Movie.GENRE, genreDropdown.getSelection());
+        movieData.put(Movie.DIRECTOR, movieDataFields.get(3).getText());
+        movieData.put(Movie.DESCRIPTION, movieDataFields.get(4).getText());
+
+        return movieData;
     }
 
     public boolean checkDataValidity() {

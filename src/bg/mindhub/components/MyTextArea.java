@@ -10,7 +10,7 @@ import java.awt.event.FocusListener;
 public class MyTextArea extends JTextArea implements FocusListener {
 
     public MyTextArea() {
-        setBorder(BorderFactory.createLineBorder(SystemSettings.mainDarkColor));
+        setBorder(BorderFactory.createLineBorder(SystemSettings.MAIN_DARK_COLOR));
         setFont(SystemSettings.GLOBAL_FONT);
         this.addFocusListener(this);
     }

@@ -9,9 +9,7 @@ public class MyCheckbox extends JCheckBox {
     public MyCheckbox(String text, ItemListener itemListener) {
         super(text);
         this.addItemListener(itemListener);
-        this.setBackground(SystemSettings.mainBackgroundColor);
+        this.setBackground(SystemSettings.MAIN_BACKGROUND_COLOR);
         this.setFocusPainted(false);
     }
-
-
 }

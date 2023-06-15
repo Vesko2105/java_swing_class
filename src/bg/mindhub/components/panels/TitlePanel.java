@@ -12,7 +12,7 @@ public class TitlePanel extends JPanel {
      */
     public TitlePanel(String titleText) {
         super(new FlowLayout());
-        this.setBackground(SystemSettings.mainDarkColor);
+        this.setBackground(SystemSettings.MAIN_DARK_COLOR);
 
         //Label settings
         JLabel title = new JLabel(titleText);

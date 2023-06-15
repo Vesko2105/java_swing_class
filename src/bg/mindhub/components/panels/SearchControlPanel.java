@@ -24,10 +24,10 @@ public class SearchControlPanel extends JPanel implements KeyListener {
     public SearchControlPanel(ActionListener actionListener, ItemListener itemListener) {
         super();
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        this.setBackground(SystemSettings.mainBackgroundColor);
+        this.setBackground(SystemSettings.MAIN_BACKGROUND_COLOR);
 
         JPanel searchBarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        searchBarPanel.setBackground(SystemSettings.mainBackgroundColor);
+        searchBarPanel.setBackground(SystemSettings.MAIN_BACKGROUND_COLOR);
 
         //The search bar settings
         searchBar = new JTextField(30);
@@ -44,7 +44,7 @@ public class SearchControlPanel extends JPanel implements KeyListener {
         searchBarPanel.add(searchButton);
 
         JPanel filtersPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        filtersPanel.setBackground(SystemSettings.mainBackgroundColor);
+        filtersPanel.setBackground(SystemSettings.MAIN_BACKGROUND_COLOR);
         filtersPanel.setPreferredSize(new Dimension(1000, 200));
 
         for (Genre genre : Genre.values()) {

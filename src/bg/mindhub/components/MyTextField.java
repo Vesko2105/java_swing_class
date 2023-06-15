@@ -12,7 +12,7 @@ public class MyTextField extends JTextField implements FocusListener {
     private static final Font font = SystemSettings.GLOBAL_FONT.deriveFont(Font.BOLD);
 
     public MyTextField() {
-        this.setBorder(BorderFactory.createLineBorder(SystemSettings.mainDarkColor));
+        this.setBorder(BorderFactory.createLineBorder(SystemSettings.MAIN_DARK_COLOR));
         this.setFont(font);
         this.addFocusListener(this);
     }

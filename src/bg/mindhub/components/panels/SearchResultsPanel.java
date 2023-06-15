@@ -15,11 +15,11 @@ public class SearchResultsPanel extends JPanel {
     public SearchResultsPanel(MovieDataTable movieDataTable) {
         super(new BorderLayout());
 
-        this.setBackground(SystemSettings.mainBackgroundColor);
+        this.setBackground(SystemSettings.MAIN_BACKGROUND_COLOR);
         this.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createEmptyBorder(0, 50, 0, 50),
                 BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(SystemSettings.mainDarkColor),
+                        BorderFactory.createLineBorder(SystemSettings.MAIN_DARK_COLOR),
                         "Results",
                         TitledBorder.CENTER,
                         TitledBorder.TOP
@@ -36,7 +36,7 @@ public class SearchResultsPanel extends JPanel {
         tableColumnAdjuster.adjustColumns();
 
         JScrollPane scrollablePane = new JScrollPane(movieDataTable);
-        scrollablePane.setBackground(SystemSettings.mainBackgroundColor);
+        scrollablePane.setBackground(SystemSettings.MAIN_BACKGROUND_COLOR);
         scrollablePane.setCorner(
                 JScrollPane.UPPER_RIGHT_CORNER,
                 new TableCorner(movieDataTable.getTableHeader().getBackground())

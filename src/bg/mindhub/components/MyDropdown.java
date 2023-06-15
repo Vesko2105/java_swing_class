@@ -1,7 +1,6 @@
 package bg.mindhub.components;
 
 import bg.mindhub.ComponentHighlighter;
-import bg.mindhub.Genre;
 import bg.mindhub.SystemSettings;
 
 import javax.swing.*;
@@ -16,9 +15,14 @@ public class MyDropdown extends JComboBox<String> implements FocusListener {
         this.addItem(placeholder);
         Arrays.stream(items).map(String::valueOf).forEach(this::addItem);
 
-        this.setBorder(BorderFactory.createLineBorder(SystemSettings.mainDarkColor));
-        this.setBackground(SystemSettings.textFieldBackgroundColor);
+        this.setBorder(BorderFactory.createLineBorder(SystemSettings.MAIN_DARK_COLOR));
+        this.setBackground(SystemSettings.TEXT_FIELD_BACKGROUND_COLOR);
         this.addFocusListener(this);
+    }
+
+    public String getSelection() {
+        Object selectedItem = super.getSelectedItem();
+        return selectedItem == null ? "null" : String.valueOf(selectedItem);
     }
 
     @Override

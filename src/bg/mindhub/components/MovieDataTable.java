@@ -44,16 +44,11 @@ public class MovieDataTable extends JTable {
         return false;
     }
 
-    public void updateMovie(List<String> data) {
-        try {
-            movieDataTableModel.updateMovie(
-                    Long.parseLong(data.get(0)),
-                    data.get(1),
-                    Integer.parseInt(data.get(2)),
-                    data.get(3),
-                    data.get(4)
-            );
-        } catch (Exception ignored) {}
+    public void updateMovie(Map<String, String> data) {
+        movieDataTableModel.updateMovie(data);
+        int movieId = Integer.parseInt(data.get(Movie.ID));
+        int createdMovieIndex = this.convertRowIndexToView(movieId);
+        this.getSelectionModel().setSelectionInterval(createdMovieIndex, createdMovieIndex);
     }
 
     public void deleteMovie(long id) {

@@ -11,18 +11,16 @@ import bg.mindhub.components.panels.TitlePanel;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
-
-// TODO: 5/18/2023 Trim input from text fields
+import java.util.Map;
 
 public class MainWindow extends JFrame implements ActionListener, ListSelectionListener, ItemListener {
 
     private SearchControlPanel searchControlPanel;
 
     private MovieDataTable movieDataTable;
-
-    private SearchResultsPanel searchResultsPanel;
 
     private DataControlPanel dataControlPanel;
 
@@ -35,9 +33,11 @@ public class MainWindow extends JFrame implements ActionListener, ListSelectionL
         this.setSize(800, 700);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
-        this.setBackground(SystemSettings.mainBackgroundColor);
+        this.setBackground(SystemSettings.MAIN_BACKGROUND_COLOR);
         this.setLocationRelativeTo(null);
 
+        ImageIcon imageIcon = new ImageIcon(SystemSettings.APP_ICON_PATH);
+        this.setIconImage(imageIcon.getImage());
         //-------- Title area --------
 
         TitlePanel titlePanel = new TitlePanel("My Movie Manager");
@@ -55,7 +55,7 @@ public class MainWindow extends JFrame implements ActionListener, ListSelectionL
 
         //-------- Search results area --------
 
-        searchResultsPanel = new SearchResultsPanel(movieDataTable);
+        SearchResultsPanel searchResultsPanel = new SearchResultsPanel(movieDataTable);
         this.add(searchResultsPanel);
 
         //-------- Data control area --------
@@ -85,14 +85,14 @@ public class MainWindow extends JFrame implements ActionListener, ListSelectionL
                     break;
                 }
 
-                List<String> movieData = dataControlPanel.getMovieData();
+                Map<String, String> movieData = dataControlPanel.getMovieData();
 
                 Movie newMovie = new Movie(
-                        movieData.get(1),
-                        Integer.parseInt(movieData.get(2)),
-                        Genre.from(movieData.get(3)),
-                        movieData.get(4),
-                        movieData.get(5)
+                        movieData.get(Movie.TITLE),
+                        Integer.parseInt(movieData.get(Movie.YEAR_RELEASED)),
+                        Genre.from(movieData.get(Movie.GENRE)),
+                        movieData.get(Movie.DIRECTOR),
+                        movieData.get(Movie.DESCRIPTION)
                 );
 
                 boolean addedSuccessfully = movieDataTable.addMovie(newMovie);
@@ -100,7 +100,7 @@ public class MainWindow extends JFrame implements ActionListener, ListSelectionL
                 if (!addedSuccessfully) {
                     JOptionPane.showMessageDialog(this, "Movie record already exists!", "Conflict", JOptionPane.ERROR_MESSAGE);
                 } else {
-                    JOptionPane.showMessageDialog(this, "Movie record created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Movie record created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE, new ImageIcon(SystemSettings.SUCCESS_ICON_PATH));
                 }
 
                 break;
@@ -129,6 +129,8 @@ public class MainWindow extends JFrame implements ActionListener, ListSelectionL
                     movieDataTable.deleteMovie(idToDelete);
                 }
 
+                JOptionPane.showMessageDialog(this, "Movie record deleted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE, new ImageIcon(SystemSettings.SUCCESS_ICON_PATH));
+
                 break;
 
             case "update":
@@ -143,8 +145,10 @@ public class MainWindow extends JFrame implements ActionListener, ListSelectionL
                     break;
                 }
 
-                List<String> data = dataControlPanel.getMovieData();
+                Map<String, String> data = dataControlPanel.getMovieData();
                 movieDataTable.updateMovie(data);
+
+                JOptionPane.showMessageDialog(this, "Movie record updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE, new ImageIcon(SystemSettings.SUCCESS_ICON_PATH));
 
                 break;
 
